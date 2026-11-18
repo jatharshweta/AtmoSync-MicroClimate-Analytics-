@@ -52,15 +52,18 @@ The generated readings are stored in a CSV file named `sensor_readings.csv`.
 
 A validation function checks whether readings fall within the configured prototype ranges.
 
+
 ### 5.2 Apache Kafka
 
-Apache Kafka is planned as the event-streaming layer.
+Apache Kafka is implemented as the event-streaming layer of the AtmoSync prototype.
 
-- Producer: Publishes sensor readings.
-- Topic: Organizes sensor events.
-- Consumer: Receives the published readings.
+- **Kafka Broker:** Runs locally using Kafka 4.4.0 with KRaft mode.
+- **Producer:** A Python Kafka Producer reads sensor readings from `sensor_readings.csv` and publishes them as JSON messages.
+- **Topic:** The `sensor_readings` topic stores the published sensor events.
+- **Consumer:** A Kafka Console Consumer receives and displays the published messages.
 
-The planned topic name is `sensor_readings`.
+The Python Producer successfully published 20 sensor readings representing two containers, and message delivery was verified through the Kafka Consumer.
+
 
 ### 5.3 Snowflake
 
@@ -99,15 +102,19 @@ AtmoSync uses multiple data categories:
 
 The reference fault datasets are not treated as actual refrigerated-container telemetry.
 
+
 ## 7. Data Flow
 
-1. The Python simulator generates sensor readings.
-2. The validation function checks readings against configured ranges.
-3. The Kafka Producer is intended to publish readings to a Kafka topic.
-4. The Kafka Consumer is intended to receive the published events.
-5. Sensor events and market-price records are intended to be loaded into Snowflake.
-6. dbt models will transform the raw data into analytical datasets.
-7. Apache Superset will connect to the prepared data and display dashboards.
+1. The Python simulator generates synthetic sensor readings for multiple containers.
+2. The validation function checks readings against configured prototype ranges.
+3. The generated readings are saved in `sensor_readings.csv`.
+4. The Python Kafka Producer reads the CSV records and publishes them as JSON messages to the `sensor_readings` topic.
+5. The Kafka Consumer receives and displays the published sensor events.
+6. Sensor events and market-price records are planned to be loaded into Snowflake.
+7. dbt models will transform raw data into analytics-ready datasets.
+8. Apache Superset will visualize the prepared data through dashboards.
+
+
 
 ## 8. Current Implementation Status
 
@@ -116,11 +123,17 @@ The reference fault datasets are not treated as actual refrigerated-container te
 | Python sensor simulator | Implemented |
 | Multi-container data generation | Implemented |
 | Basic sensor validation | Implemented |
-| CSV output generation | Implemented locally |
-| Kafka integration | Planned |
+| CSV output generation | Implemented and tested locally |
+| Kafka 4.4.0 broker setup | Implemented and tested |
+| Kafka KRaft configuration | Implemented |
+| `sensor_readings` topic | Created and verified |
+| Python Kafka Producer | Implemented and tested |
+| Kafka Consumer | Console consumer tested |
+| Publishing 20 sensor readings | Successfully tested |
 | Snowflake integration | Planned |
 | dbt transformations | Planned |
 | Superset dashboard | Planned |
+
 
 ## 9. Assumptions and Limitations
 
