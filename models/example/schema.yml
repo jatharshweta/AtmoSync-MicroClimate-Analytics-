@@ -1,4 +1,3 @@
-
 version: 2
 
 models:
@@ -19,3 +18,28 @@ models:
         data_tests:
           - unique
           - not_null
+
+  - name: stg_sensor_readings
+    description: "Transformed sensor readings with prototype condition classification"
+    columns:
+      - name: container_id
+        data_tests:
+          - not_null
+      - name: reading_timestamp
+        data_tests:
+          - not_null
+      - name: temperature_c
+        data_tests:
+          - not_null
+      - name: humidity_percent
+        data_tests:
+          - not_null
+      - name: vibration_mm_s
+        data_tests:
+          - not_null
+      - name: prototype_condition
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VALID', 'CHECK_REQUIRED']
