@@ -2,11 +2,41 @@
 
 ## 1. Project Overview
 
-AtmoSync uses market-price data and sensor-related reference datasets to develop a simulated micro-climate monitoring and arbitrage analytics pipeline.
+AtmoSync uses synthetic sensor data, agricultural market-price information, and reference fault datasets to develop a micro-climate monitoring and analytics prototype.
 
-The selected datasets are used for research, reference analysis, and development. They are not all direct refrigerated-container datasets.
+The datasets are used for research, reference analysis, and prototype development. Not all datasets directly represent refrigerated transportation conditions.
 
-## 2. Market Price Dataset
+## 2. Synthetic Sensor Dataset
+
+**File:** `sensor_readings.csv`  
+**Source:** Generated using the AtmoSync Python simulator.
+
+**Columns:**
+- timestamp
+- container_id
+- temperature_c
+- humidity_percent
+- vibration_mm_s
+- sensor_status
+
+**Generated details:**
+- Total records: 20
+- Containers: 2
+- Readings per container: 10
+- Container IDs: CONT_001 and CONT_002
+
+**Purpose in AtmoSync:**
+- Simulate transportation sensor readings.
+- Test prototype validation logic.
+- Demonstrate Kafka event streaming.
+- Load sensor records into Snowflake.
+- Perform transformations and analytics using dbt.
+
+**Limitation:**
+
+The readings are synthetic and do not represent measurements from physical transportation containers.
+
+## 3. Agricultural Market Price Dataset – Kaggle
 
 **File:** `daily_price.csv`  
 **Source:** [Agricultural Commodity Prices in India – Kaggle](https://www.kaggle.com/code/arvindkhoda/price-of-agricultural-commodities-data/input)
@@ -25,15 +55,48 @@ The selected datasets are used for research, reference analysis, and development
 **Inspected details:**
 - Records: 5,557
 - Columns: 9
+- States: 23
+- Districts: 245
+- Markets: 531
+- Commodities: 186
 - Tomato records: 225
 - Arrival Date column: Not available
 - Price unit: Not independently verified
 
-**Purpose in AtmoSync:** Reference for commodity and market-price analysis.
+**Purpose in AtmoSync:**
 
-**Limitation:** This dataset does not contain a date column, so it cannot independently support historical price trend analysis or time-series forecasting.
+This dataset provides a reference for comparing agricultural commodity prices across markets.
 
-## 3. Industrial Fault Detection Dataset
+**Limitation:**
+
+The dataset does not contain an arrival-date column. Therefore, it cannot independently support historical price trend analysis or time-series forecasting.
+
+## 4. Tomato Market Price Research – AGMARKNET
+
+**Source:** AGMARKNET / Ministry of Agriculture and Farmers Welfare, Government of India.
+
+**Research selection:**
+- Commodity: Tomato
+- State: Maharashtra
+- District: Kolhapur
+- Research period: 1 October 2026 – 16 November 2026
+
+**Observed research details:**
+- The portal displayed 74 matching records.
+- 10 records were visible in the inspected result.
+- Sample modal price values included 1000, 800, and 900.
+- Price units and complete dataset metadata still require verification.
+- Full dataset download was not completed.
+
+**Purpose in AtmoSync:**
+
+The research explores the availability of dated tomato market-price information for future market comparison and price analysis.
+
+**Limitation:**
+
+This is preliminary source research. The complete dataset has not been downloaded or integrated into Snowflake.
+
+## 5. Industrial Fault Detection Dataset
 
 **File:** `industrial_fault_detection_data_1000.csv`  
 **Source:** [Industrial IoT Fault Detection – Kaggle](https://www.kaggle.com/code/amandaillona/shapelet-propo/input)
@@ -51,13 +114,20 @@ The selected datasets are used for research, reference analysis, and development
 - Records: 1,000
 - Columns: 7
 - Time interval: One minute between records
-- Missing values: None
+- Fault Label 0: 609 records
+- Fault Label 1: 303 records
+- Fault Label 2: 88 records
+- Missing values: None observed during inspection
 
-**Purpose in AtmoSync:** Reference for understanding industrial sensor readings, vibration analysis, and fault-detection logic.
+**Purpose in AtmoSync:**
 
-**Limitation:** This dataset represents industrial machinery, not refrigerated transport containers. It will not be treated as actual cold-chain telemetry.
+Reference for understanding industrial sensor readings, vibration analysis, and fault-detection concepts.
 
-## 4. Sensor Fault Detection Dataset
+**Limitation:**
+
+This dataset represents industrial machinery, not refrigerated transport containers. Its fault labels are not used as verified food-spoilage labels.
+
+## 6. Sensor Fault Detection Dataset
 
 **File:** `sensor-fault-detection.csv`  
 **Source:** [Sensor Fault Detection Data – Kaggle](https://www.kaggle.com/code/kerneler/starter-sensor-fault-detection-data-5681d09f-8/input)
@@ -72,40 +142,54 @@ The selected datasets are used for research, reference analysis, and development
 - Columns: 3
 - Separator: Semicolon (;)
 - Sensor ID: 1
+- Date range: 1 August 2016 – 1 September 2017
 - Sensor description: PT100 temperature sensor in an industrial environment
 
-**Purpose in AtmoSync:** Reference for timestamp-based sensor readings and sensor-event simulation.
+**Purpose in AtmoSync:**
 
-**Limitation:** The source describes an industrial PT100 sensor. Its readings will not be assumed to represent refrigerated-container conditions.
+Reference for timestamp-based sensor readings and sensor-event analysis.
 
-## 5. Dataset Selection and Usage
+**Limitation:**
 
-| Dataset | Intended use |
-|---|---|
-| Market Prices | Commodity price reference |
-| Industrial Fault | Vibration and fault-analysis reference |
-| Sensor Fault | Timestamp and sensor-event reference |
+The source describes an industrial PT100 sensor. Its readings are not assumed to represent refrigerated-container conditions.
 
-## 6. Data Quality and Verification
+## 7. Dataset Selection and Usage
 
-- All three downloaded CSV files were inspected.
-- No missing values were found in the inspected files.
-- Dataset structure and column names were recorded.
-- Unknown units and unverified meanings will not be assumed.
-- Original downloaded datasets will be preserved unchanged.
-- Dataset redistribution and usage licenses must be checked before public redistribution.
+| Dataset | Purpose | Current status |
+|---|---|---|
+| Synthetic Sensor Data | Container monitoring prototype | Generated and tested |
+| Kaggle Market Prices | Commodity price reference | Inspected |
+| AGMARKNET Tomato Prices | Dated market-price research | Preliminary research |
+| Industrial Fault Detection | Fault-analysis reference | Inspected |
+| Sensor Fault Detection | Sensor-event reference | Inspected |
 
-## 7. Pending Data Requirements
+## 8. Data Quality and Verification
 
-The project still requires:
+- The three downloaded reference CSV datasets were inspected.
+- Dataset structures and column names were recorded.
+- Missing-value checks were performed during dataset inspection.
+- Unknown units and unverified meanings are not assumed.
+- Original downloaded datasets are preserved unchanged.
+- Synthetic sensor data was generated and validated through the Python simulator.
+- Twenty sensor readings were successfully loaded into Snowflake.
+- dbt transformations and seven data quality tests were successfully executed.
+- Market-price integration into the current Snowflake analytics pipeline is still pending.
 
-1. A verified source or clearly labelled synthetic temperature and humidity data for refrigerated-container simulation.
-2. A dated market-price dataset for historical price analysis.
-3. A Python-based event simulator to publish sensor readings to Kafka.
-4. Validation of dataset licensing and source metadata.
+## 9. Pending Data Requirements
 
-## Research Status
+1. Complete and verified dated tomato market-price data.
+2. Verification of market-price units and source metadata.
+3. Integration of market-price records into Snowflake.
+4. Market-wise price comparison and analytics.
+5. Verification of dataset licensing before redistribution.
+6. Additional validated cold-chain sensor data for more realistic analysis.
 
-Initial dataset inspection completed.
+## 10. Research Status
 
-Dataset selection is provisional. Further verification and simulator development are pending.
+Initial reference dataset inspection completed.
+
+Synthetic sensor data generation, Kafka streaming, Snowflake sensor-data loading, and dbt transformations have been implemented and tested.
+
+Tomato market-price research using AGMARKNET has been initiated, but complete data acquisition and integration remain pending.
+
+The project continues to distinguish synthetic prototype data, reference datasets, and verified market-price information.
