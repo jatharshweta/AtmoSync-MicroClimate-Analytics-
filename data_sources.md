@@ -6,6 +6,8 @@ AtmoSync uses synthetic sensor data, agricultural market-price information, and 
 
 The datasets are used for research, reference analysis, and prototype development. Not all datasets directly represent refrigerated transportation conditions.
 
+The project currently implements sensor simulation, Kafka event streaming, Snowflake data storage, dbt transformations, and Power BI dashboard visualization.
+
 ## 2. Synthetic Sensor Dataset
 
 **File:** `sensor_readings.csv`  
@@ -20,10 +22,17 @@ The datasets are used for research, reference analysis, and prototype developmen
 - sensor_status
 
 **Generated details:**
-- Total records: 20
+- Records per simulation run: 20
 - Containers: 2
-- Readings per container: 10
+- Readings per container per run: 10
 - Container IDs: CONT_001 and CONT_002
+
+**Latest Snowflake storage details:**
+- Total verified records: 40
+- CONT_001: 20 records
+- CONT_002: 20 records
+
+The Snowflake records include previously loaded data and the latest simulation data.
 
 **Purpose in AtmoSync:**
 - Simulate transportation sensor readings.
@@ -31,6 +40,7 @@ The datasets are used for research, reference analysis, and prototype developmen
 - Demonstrate Kafka event streaming.
 - Load sensor records into Snowflake.
 - Perform transformations and analytics using dbt.
+- Visualize sensor metrics using Power BI.
 
 **Limitation:**
 
@@ -70,6 +80,8 @@ This dataset provides a reference for comparing agricultural commodity prices ac
 **Limitation:**
 
 The dataset does not contain an arrival-date column. Therefore, it cannot independently support historical price trend analysis or time-series forecasting.
+
+The dataset has not yet been integrated into the current Snowflake analytics pipeline.
 
 ## 4. Tomato Market Price Research – AGMARKNET
 
@@ -155,7 +167,7 @@ The source describes an industrial PT100 sensor. Its readings are not assumed to
 
 ## 7. Dataset Selection and Usage
 
-| Dataset | Purpose | Current status |
+| Dataset | Purpose | Current Status |
 |---|---|---|
 | Synthetic Sensor Data | Container monitoring prototype | Generated and tested |
 | Kaggle Market Prices | Commodity price reference | Inspected |
@@ -171,8 +183,12 @@ The source describes an industrial PT100 sensor. Its readings are not assumed to
 - Unknown units and unverified meanings are not assumed.
 - Original downloaded datasets are preserved unchanged.
 - Synthetic sensor data was generated and validated through the Python simulator.
-- Twenty sensor readings were successfully loaded into Snowflake.
-- dbt transformations and seven data quality tests were successfully executed.
+- Kafka Producer and Consumer were successfully tested.
+- A total of 40 sensor records were verified in Snowflake.
+- dbt staging and container analytics models were successfully executed.
+- Seven dbt data quality tests passed successfully.
+- Snowflake sensor data was imported into Power BI.
+- Dashboard charts, KPI cards, and a container slicer were implemented.
 - Market-price integration into the current Snowflake analytics pipeline is still pending.
 
 ## 9. Pending Data Requirements
@@ -186,10 +202,16 @@ The source describes an industrial PT100 sensor. Its readings are not assumed to
 
 ## 10. Research Status
 
-Initial reference dataset inspection completed.
+Initial reference dataset inspection has been completed.
 
-Synthetic sensor data generation, Kafka streaming, Snowflake sensor-data loading, and dbt transformations have been implemented and tested.
+Synthetic sensor data generation, Kafka Producer and Consumer testing, Snowflake sensor-data loading, dbt transformations, and Power BI dashboard development have been implemented and tested.
 
 Tomato market-price research using AGMARKNET has been initiated, but complete data acquisition and integration remain pending.
 
 The project continues to distinguish synthetic prototype data, reference datasets, and verified market-price information.
+
+---
+
+**Project:** AtmoSync – Micro-Climate Arbitrage Analytics  
+**Developer:** Shweta Jathar  
+**Repository:** [AtmoSync on GitHub](https://github.com/jatharshweta/AtmoSync-MicroClimate-Analytics-)
