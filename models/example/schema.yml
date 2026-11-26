@@ -43,3 +43,29 @@ models:
           - accepted_values:
               arguments:
                 values: ['VALID', 'CHECK_REQUIRED']
+
+
+      
+  - name: container_analytics
+    description: "Container-level sensor analytics and aggregation"
+    columns:
+      - name: container_id
+        data_tests:
+          - unique
+          - not_null
+      - name: total_readings
+        data_tests:
+          - not_null
+      - name: avg_temperature
+        data_tests:
+          - not_null
+      - name: avg_humidity
+        data_tests:
+          - not_null
+      - name: avg_vibration
+        data_tests:
+          - not_null
+      - name: check_required_count
+        data_tests:
+          - not_null
+
