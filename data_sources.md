@@ -186,7 +186,7 @@ The source describes an industrial PT100 sensor. Its readings are not assumed to
 - Kafka Producer and Consumer were successfully tested.
 - A total of 40 sensor records were verified in Snowflake.
 - dbt staging and container analytics models were successfully executed.
-- Seven dbt data quality tests passed successfully.
+- Eleven dbt data quality tests passed successfully (PASS=11, WARN=0, ERROR=0).
 - Snowflake sensor data was imported into Power BI.
 - Dashboard charts, KPI cards, and a container slicer were implemented.
 - Market-price integration into the current Snowflake analytics pipeline is still pending.
