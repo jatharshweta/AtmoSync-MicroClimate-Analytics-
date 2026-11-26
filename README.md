@@ -232,7 +232,7 @@ Refer to [data_sources.md](data_sources.md) for dataset details, sources, and li
 | Snowflake Data Records | 40 Verified |
 | dbt Staging Model | Tested |
 | dbt Container Analytics | Tested |
-|dbt data quality tests | 11 tests passed |
+|dbt data quality tests | 18 tests passed |
 | Power BI Dashboard | Implemented |
 | GitHub Documentation | Maintained |
 | Market Price Integration | Pending |
