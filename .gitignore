@@ -1,5 +1,20 @@
 
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# dbt
 target/
 dbt_packages/
 logs/
-.env
+
+# Temporary files
+*.log
+.DS_Store
+Thumbs.db
