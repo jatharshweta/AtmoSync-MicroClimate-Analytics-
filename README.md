@@ -145,9 +145,10 @@ Implemented tests for required columns and accepted status values.
 
 **Latest recorded test result:**
 
-- Total tests: 7
-- Passed: 7
+- Total tests: 11
+- Passed: 11
 - Failed: 0
+- Warnings: 0
 
 Both dbt models were successfully executed.
 
@@ -231,7 +232,7 @@ Refer to [data_sources.md](data_sources.md) for dataset details, sources, and li
 | Snowflake Data Records | 40 Verified |
 | dbt Staging Model | Tested |
 | dbt Container Analytics | Tested |
-| dbt Data Quality Tests | 7 Passed |
+|dbt data quality tests | 11 tests passed |
 | Power BI Dashboard | Implemented |
 | GitHub Documentation | Maintained |
 | Market Price Integration | Pending |
