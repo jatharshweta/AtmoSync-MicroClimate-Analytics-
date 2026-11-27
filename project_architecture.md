@@ -4,9 +4,9 @@
 
 AtmoSync is a data analytics prototype designed to monitor simulated micro-climate conditions during the transportation of perishable agricultural products and explore agricultural market-price opportunities.
 
-The system focuses on sensor parameters such as temperature, humidity, and vibration. It combines Python-based sensor simulation, Apache Kafka event streaming, Snowflake cloud data warehousing, dbt-based data transformation, and Power BI visualization.
+The system focuses on sensor parameters such as temperature, humidity, and vibration. It combines Python-based sensor simulation, Apache Kafka event streaming, Snowflake cloud data warehousing, dbt-based data transformation, and Apache Superset for business intelligence visualization.
 
-The prototype demonstrates how transportation sensor information can be generated, streamed, stored, transformed, and visualized through a data analytics workflow.
+The prototype demonstrates how transportation sensor information can be generated, streamed, stored, transformed, and prepared for analytics through a data engineering and business intelligence workflow.
 
 ## 2. Project Objectives
 
@@ -15,8 +15,9 @@ The prototype demonstrates how transportation sensor information can be generate
 - Stream sensor data using Apache Kafka.
 - Store sensor readings in Snowflake.
 - Transform raw sensor data into analytics-ready datasets using dbt.
-- Perform container-level analytics.
-- Visualize sensor metrics using Power BI.
+- Perform container-level sensor analytics.
+- Analyze temperature, humidity, and vibration patterns.
+- Prepare datasets for Apache Superset dashboards.
 - Explore agricultural commodity market-price information.
 - Prepare data for future transportation decision-support applications.
 
@@ -27,31 +28,45 @@ The prototype demonstrates how transportation sensor information can be generate
 | Python | Sensor data simulation and validation |
 | Apache Kafka 4.4.0 | Sensor event streaming |
 | Snowflake | Cloud data warehouse |
-| dbt | SQL-based data transformation and testing |
+| dbt Core | SQL-based data transformation and testing |
 | SQL | Data querying and analytics |
-| Power BI | Interactive dashboard and visualization |
-| CSV | Sensor data storage and transfer |
-| GitHub | Version control and project documentation |
+| Apache Superset | Planned BI dashboard and visualization layer |
+| CSV | Data storage, transfer, and seed files |
+| Git and GitHub | Version control and project documentation |
 
 ## 4. System Architecture
 
-AtmoSync uses two separate but related data workflows.
+AtmoSync currently uses separate sensor-streaming and data-warehousing workflows.
 
 ### 4.1 Sensor Event Streaming Workflow
 
 **Python IoT Simulator → CSV → Kafka Producer → Kafka Topic → Python Kafka Consumer**
 
-The Python simulator generates sensor readings and stores them in a CSV file. The Kafka Producer reads the CSV records and publishes them as JSON messages to the Kafka topic. The Kafka Consumer receives and displays the messages.
+The Python simulator generates synthetic sensor readings and stores them in a CSV file.
+
+The Kafka Producer reads the generated CSV records and publishes them as JSON messages to the `sensor_readings` Kafka topic.
+
+The Kafka Consumer receives messages from the topic and displays the sensor events.
+
+**Current limitation:** Kafka streaming and Snowflake data loading have been tested as separate workflows. Automatic Kafka-to-Snowflake integration is not yet verified.
 
 ### 4.2 Data Warehousing and Analytics Workflow
 
-**Sensor CSV → Snowflake Stage → Snowflake RAW Table → dbt Staging Model → dbt Container Analytics → Power BI Dashboard**
+**Sensor CSV → Snowflake RAW Table → dbt Staging Model → dbt Analytics Models → Analytics-ready Tables**
 
-The generated CSV file is uploaded manually to Snowflake. dbt transforms the raw sensor data into analytics-ready models, which are imported into Power BI for visualization.
+The generated sensor CSV file is uploaded manually to Snowflake.
 
-**Important:** Automatic Kafka-to-Snowflake integration has not been implemented. Kafka streaming and Snowflake data loading are tested as separate workflows.
+dbt reads the raw sensor data, applies transformations, calculates container-level metrics, and prepares analytics-ready tables.
 
-Agricultural market-price information is researched separately and is intended for future integration.
+Apache Superset is planned as the BI visualization layer. Its deployment, Snowflake connection, and dashboard development are pending.
+
+### 4.3 Market and Route Analytics Workflow
+
+**Mock Market Price CSV + Container Route CSV → dbt Seeds → dbt Models → Analytics-ready Data**
+
+Synthetic market-price and container-route datasets are loaded through dbt seeds.
+
+These datasets are used to demonstrate market comparison and route analytics within the prototype. They are not verified real-time market prices or actual transportation records.
 
 ## 5. Component Description
 
@@ -60,6 +75,7 @@ Agricultural market-price information is researched separately and is intended f
 The Python simulator generates synthetic sensor readings for multiple transportation containers.
 
 The current simulation generates:
+
 - Temperature readings
 - Humidity readings
 - Vibration readings
@@ -67,11 +83,16 @@ The current simulation generates:
 - Container identifiers
 - Sensor validation status
 
-The simulator generates 20 readings for two containers, with 10 readings per container in each simulation run.
+**Simulation details:**
+
+- Records per simulation run: 20
+- Number of containers: 2
+- Readings per container per run: 10
+- Container IDs: `CONT_001` and `CONT_002`
 
 The generated readings are stored in `sensor_readings.csv`.
 
-Configured prototype validation ranges:
+**Configured prototype validation ranges:**
 
 | Parameter | Prototype Range |
 |---|---|
@@ -81,31 +102,36 @@ Configured prototype validation ranges:
 
 These are configurable prototype assumptions, not verified tomato transportation standards.
 
-A reading outside the configured ranges receives the status `CHECK_REQUIRED`. A reading within the ranges receives `VALID`.
+A reading outside the configured ranges receives the status `CHECK_REQUIRED`. A reading within the configured ranges receives `VALID`.
+
+The dbt staging model also identifies invalid or missing values using the `INVALID` classification.
 
 ### 5.2 Apache Kafka
 
-Apache Kafka is implemented as the event-streaming layer.
+Apache Kafka is used as the event-streaming layer.
 
-- **Broker:** Kafka 4.4.0 running locally in KRaft mode.
-- **Topic:** `sensor_readings`.
-- **Producer:** Python Kafka Producer reads `sensor_readings.csv` and publishes sensor records as JSON messages.
-- **Consumer:** Python Kafka Consumer receives and displays messages from the topic.
+- **Version:** Apache Kafka 4.4.0
+- **Mode:** KRaft
+- **Topic:** `sensor_readings`
+- **Producer:** Python Kafka Producer reads sensor records from CSV and publishes JSON messages.
+- **Consumer:** Python Kafka Consumer receives and displays messages.
 
-The Producer successfully published 20 sensor messages during testing. The Consumer was tested and successfully received messages from the Kafka topic.
+The Producer and Consumer were tested separately. During testing, the Producer successfully published 20 sensor messages and the Consumer successfully received messages.
+
+**Limitation:** Live Kafka broker operation and end-to-end Kafka-to-Snowflake ingestion are not currently verified.
 
 ### 5.3 Snowflake
 
 Snowflake is implemented as the cloud data warehouse.
 
-The following database objects were created:
+**Database objects:**
 
 - Database: `ATMOSYNC_DB`
-- Schema: `RAW`
+- Raw Schema: `RAW`
 - Table: `SENSOR_READINGS`
 - Stage: `ATMOSYNC_CSV_STAGE`
 
-The table contains six columns:
+The raw sensor table contains six columns:
 
 - `TIMESTAMP`
 - `CONTAINER_ID`
@@ -114,85 +140,126 @@ The table contains six columns:
 - `VIBRATION_MM_S`
 - `SENSOR_STATUS`
 
-The generated `sensor_readings.csv` file was uploaded manually through Snowflake.
+The generated `sensor_readings.csv` file was uploaded manually to Snowflake.
 
 **Latest verified database status:**
 
-- Total sensor records: 40
-- `CONT_001`: 20 records
-- `CONT_002`: 20 records
+| Metric | Value |
+|---|---:|
+| Total sensor records | 40 |
+| CONT_001 records | 20 |
+| CONT_002 records | 20 |
 
 The 40 records include previously loaded data and the latest simulation data.
 
-### 5.4 dbt
+### 5.4 dbt Core
 
-dbt is implemented for SQL-based data transformation and data quality testing.
+dbt Core is implemented for SQL-based data transformation and data quality testing.
 
-The dbt project contains two main transformation models.
+The dbt project uses Snowflake as its data warehouse.
 
-**A. stg_sensor_readings**
+**Configured dbt seeds:**
+
+1. `market_prices.csv` – mock commodity market-price information.
+2. `container_routes.csv` – synthetic container route information.
+
+**Main transformation models:**
+
+**A. `stg_sensor_readings`**
 
 This staging model:
+
 - Reads data from the Snowflake RAW sensor table.
 - Structures raw sensor readings.
+- Converts numeric sensor values into appropriate data types.
 - Applies configured prototype condition checks.
-- Classifies readings as `VALID` or `CHECK_REQUIRED`.
+- Classifies readings as `VALID`, `CHECK_REQUIRED`, or `INVALID`.
 
-**B. container_analytics**
+**B. `container_analytics`**
 
 This model performs container-level aggregation and calculates:
+
 - Total readings
 - Average temperature
 - Average humidity
 - Average vibration
 - Number of readings requiring checks
+- Market-wise reference information
 
-Both models were successfully executed in Snowflake through dbt.
+**C. `spoilage_arbitrage`**
 
-The dbt data quality tests were also executed successfully.
+This model prepares exploratory risk classifications and recommendations based on configured sensor conditions.
 
-**Latest recorded testing result:**
-- Total tests: 7
-- Passed: 7
-- Failed: 0
+It classifies records into:
 
-### 5.5 Power BI
+- HIGH
+- MEDIUM
+- LOW
 
-Power BI Desktop is implemented as the visualization layer.
+These are prototype risk categories, not scientifically validated spoilage predictions.
 
-Power BI was successfully connected to Snowflake, and the `SENSOR_READINGS` table was imported for dashboard development.
+**D. `container_routes_analysis`**
 
-The dashboard includes:
+This model:
 
-- Temperature Monitoring – Line Chart
-- Humidity Monitoring – Line Chart
-- Vibration Monitoring – Line Chart
-- Container-wise Average Temperature – Clustered Column Chart
-- Total Sensor Readings – KPI Card
-- Average Temperature – KPI Card
-- Average Humidity – KPI Card
-- Average Vibration – KPI Card
-- Container ID – Interactive Slicer
+- Reads synthetic route information.
+- Converts departure and arrival timestamps.
+- Calculates transportation duration.
+- Prepares route-level analytics.
 
-**Verified dashboard metrics:**
+**E. `temperature_analysis`**
 
-| Metric | Value |
-|---|---:|
-| Total Sensor Readings | 40 |
-| Average Temperature | 5.49 °C |
-| Average Vibration | 0.46 mm/s |
+This model:
 
-The dashboard is saved as `AtmoSync_MicroClimate_Dashboard.pbix`.
+- Analyzes temperature readings.
+- Calculates rolling average temperature.
+- Classifies temperature status as HIGH, LOW, or NORMAL.
+
+**Latest dbt execution results:**
+
+| Operation | Result |
+|---|---|
+| dbt debug | Connection successful |
+| dbt seed | 2 seeds loaded |
+| dbt run | 7 table models built successfully |
+| dbt test | 33 tests passed |
+| Failed tests | 0 |
+
+All 33 configured dbt data quality tests passed successfully.
+
+### 5.5 Apache Superset
+
+Apache Superset is selected as the business intelligence and visualization layer.
+
+The planned implementation includes:
+
+- Self-hosted Apache Superset deployment.
+- Snowflake database connection.
+- Dataset configuration using analytics-ready dbt tables.
+- User access and role configuration.
+- Temperature monitoring charts.
+- Humidity monitoring charts.
+- Vibration monitoring charts.
+- Container-wise average temperature comparison.
+- Total sensor readings KPI.
+- Average temperature KPI.
+- Average humidity KPI.
+- Average vibration KPI.
+- Container ID filter.
+
+**Current status:** Superset deployment, Snowflake connection, role configuration, and dashboard development are pending.
 
 ## 6. Data Sources
 
 AtmoSync uses the following data categories:
 
 1. **Synthetic sensor data:** Generated by the Python simulator for prototype testing.
-2. **Agricultural market-price data:** Commodity and market-price records researched for price analysis.
-3. **Reference fault datasets:** Public industrial sensor and fault datasets used for understanding sensor behaviour and fault-analysis concepts.
+2. **Mock market-price data:** Created for demonstrating market comparison through dbt.
+3. **Synthetic route data:** Created for route analysis.
+4. **Agricultural market-price reference data:** Public market-price datasets researched for future integration.
+5. **Reference fault datasets:** Public industrial sensor and fault datasets used for understanding sensor behaviour and fault-analysis concepts.
 
-The reference fault datasets are not treated as actual refrigerated-container telemetry.
+The industrial reference datasets are not treated as actual refrigerated-container telemetry.
 
 Tomato in Maharashtra, particularly the Kolhapur market context, was selected for further market-price research.
 
@@ -206,31 +273,40 @@ Refer to `data_sources.md` for dataset details, sources, and limitations.
 2. The validation function checks readings against configured prototype ranges.
 3. The readings are saved in `sensor_readings.csv`.
 4. Python Kafka Producer reads the CSV records.
-5. Producer publishes 20 JSON messages to the `sensor_readings` topic.
+5. Producer publishes JSON messages to the `sensor_readings` topic.
 6. Python Kafka Consumer receives and displays messages.
 
 ### 7.2 Data Warehousing and Analytics
 
-1. The sensor CSV file is uploaded manually to the Snowflake stage.
-2. The sensor data is loaded into the Snowflake RAW table.
+1. Sensor CSV file is uploaded manually to Snowflake.
+2. Sensor data is loaded into the Snowflake RAW table.
 3. The latest verified Snowflake table contains 40 records.
 4. dbt staging model transforms the raw sensor readings.
-5. dbt container analytics model calculates container-level metrics.
-6. dbt tests validate required columns and allowed prototype status values.
-7. Power BI imports the Snowflake sensor table.
-8. Dashboard charts, KPI cards, and a container slicer visualize the sensor data.
+5. dbt analytics models calculate container-level metrics and prepare route and temperature analysis.
+6. dbt seeds load mock market-price and route datasets.
+7. dbt tests validate required fields and configured data quality rules.
+8. Analytics-ready tables are prepared for future Apache Superset dashboards.
+
+### 7.3 Planned BI Workflow
+
+1. Deploy self-hosted Apache Superset.
+2. Configure Snowflake database connectivity.
+3. Register analytics-ready dbt tables as datasets.
+4. Configure user access roles.
+5. Create sensor monitoring charts and KPI cards.
+6. Build an interactive AtmoSync dashboard.
 
 ## 8. Current Implementation Status
 
-| Component | Status |
+| Component | Current Status |
 |---|---|
 | Python sensor simulator | Implemented and tested |
 | Multi-container data generation | Implemented |
 | Basic sensor validation | Implemented and tested |
 | CSV output generation | Implemented and tested |
-| Kafka 4.4.0 broker setup | Implemented and tested |
-| Kafka KRaft configuration | Implemented |
-| `sensor_readings` topic | Created and verified |
+| Kafka 4.4.0 setup | Configured |
+| Kafka KRaft configuration | Configured |
+| `sensor_readings` topic | Created |
 | Python Kafka Producer | Implemented and tested |
 | Python Kafka Consumer | Implemented and tested |
 | Publishing 20 sensor messages | Successfully tested |
@@ -238,32 +314,37 @@ Refer to `data_sources.md` for dataset details, sources, and limitations.
 | Snowflake sensor table | Created |
 | Snowflake sensor records | 40 records verified |
 | dbt-Snowflake connection | Successfully tested |
-| `stg_sensor_readings` model | Implemented and tested |
-| `container_analytics` model | Implemented and tested |
-| dbt data quality tests | 7 tests passed |
-| Power BI Snowflake connection | Successfully tested |
-| Power BI dashboard | Implemented |
-| Automatic Kafka-to-Snowflake integration | Pending |
-| Market-price integration with analytics pipeline | Pending |
+| dbt seeds | 2 loaded successfully |
+| dbt table models | 7 built successfully |
+| dbt data quality tests | 33 passed |
+| Automatic Kafka-to-Snowflake integration | Pending verification |
+| Apache Superset deployment | Pending |
+| Superset-Snowflake connection | Pending |
+| Superset user roles | Pending |
+| Superset dashboard | Pending |
+| Verified market-price integration | Pending |
 
 ## 9. Assumptions and Limitations
 
 - Sensor readings are synthetic and generated for prototype testing.
 - Temperature, humidity, and vibration thresholds are configurable assumptions, not verified storage or transportation standards for tomatoes.
-- `VALID` means a reading falls within the configured prototype ranges. It does not confirm that the transported product is safe or free from spoilage.
-- Kafka-to-Snowflake automatic streaming has not been implemented.
-- CSV data is manually uploaded to Snowflake.
-- The market-price dataset requires verification of date coverage, units, and source metadata before detailed price comparisons.
+- `VALID` means a reading falls within configured prototype ranges. It does not confirm that the transported product is safe or free from spoilage.
+- Kafka Producer and Consumer have been tested separately; automatic Kafka-to-Snowflake streaming is not yet verified.
+- CSV sensor data is manually uploaded to Snowflake.
+- Mock market-price values are for demonstration only and are not verified current market prices.
+- External market-price datasets require verification of date coverage, units, and source metadata before detailed price comparisons.
 - Reference industrial and sensor fault datasets do not represent actual refrigerated-container conditions.
 - No validated spoilage prediction model has been developed.
 - Reliable destination recommendations require verified market data, transportation costs, defined business rules, and further validation.
-- Market-price integration with the sensor analytics pipeline remains pending.
+- Apache Superset dashboard implementation is pending.
 
 ## 10. Expected Outcome
 
-The implemented AtmoSync prototype demonstrates sensor simulation, event streaming, cloud data storage, SQL-based transformation, data quality testing, and interactive dashboard visualization.
+The implemented AtmoSync prototype demonstrates sensor simulation, Kafka event-streaming development, cloud data storage, SQL-based transformations, seed loading, and automated data quality testing.
 
-The Power BI dashboard provides a visual summary of temperature, humidity, vibration, and container-level sensor metrics.
+The dbt analytics models prepare sensor, route, and mock market-price data for business intelligence analysis.
+
+The planned Apache Superset dashboard will provide visual summaries of temperature, humidity, vibration, and container-level sensor metrics.
 
 Future development can extend the prototype with verified market-price integration, automated data ingestion, advanced analytics, and validated transportation decision-support logic.
 
