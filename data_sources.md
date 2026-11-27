@@ -2,11 +2,11 @@
 
 ## 1. Project Overview
 
-AtmoSync uses synthetic sensor data, agricultural market-price information, and reference fault datasets to develop a micro-climate monitoring and analytics prototype.
+AtmoSync uses synthetic sensor data, agricultural market-price reference information, and industrial fault datasets to develop a micro-climate monitoring and analytics prototype.
 
-The datasets are used for research, reference analysis, and prototype development. Not all datasets directly represent refrigerated transportation conditions.
+The project implements Python sensor simulation, Apache Kafka event streaming, Snowflake data storage, dbt transformations, and analytics-ready datasets.
 
-The project currently implements sensor simulation, Kafka event streaming, Snowflake data storage, dbt transformations, and Power BI dashboard visualization.
+The project distinguishes between synthetic prototype data, external reference datasets, and mock market-price data.
 
 ## 2. Synthetic Sensor Dataset
 
@@ -27,12 +27,10 @@ The project currently implements sensor simulation, Kafka event streaming, Snowf
 - Readings per container per run: 10
 - Container IDs: CONT_001 and CONT_002
 
-**Latest Snowflake storage details:**
-- Total verified records: 40
+**Latest verified Snowflake storage details:**
+- Total records: 40
 - CONT_001: 20 records
 - CONT_002: 20 records
-
-The Snowflake records include previously loaded data and the latest simulation data.
 
 **Purpose in AtmoSync:**
 - Simulate transportation sensor readings.
@@ -40,13 +38,13 @@ The Snowflake records include previously loaded data and the latest simulation d
 - Demonstrate Kafka event streaming.
 - Load sensor records into Snowflake.
 - Perform transformations and analytics using dbt.
-- Visualize sensor metrics using Power BI.
+- Prepare data for business intelligence dashboards.
 
 **Limitation:**
 
 The readings are synthetic and do not represent measurements from physical transportation containers.
 
-## 3. Agricultural Market Price Dataset – Kaggle
+## 3. Agricultural Market Price Reference Dataset – Kaggle
 
 **File:** `daily_price.csv`  
 **Source:** [Agricultural Commodity Prices in India – Kaggle](https://www.kaggle.com/code/arvindkhoda/price-of-agricultural-commodities-data/input)
@@ -73,15 +71,13 @@ The readings are synthetic and do not represent measurements from physical trans
 - Arrival Date column: Not available
 - Price unit: Not independently verified
 
-**Purpose in AtmoSync:**
+**Purpose:**
 
-This dataset provides a reference for comparing agricultural commodity prices across markets.
+Reference for understanding agricultural commodity prices and market-wise price comparisons.
 
 **Limitation:**
 
-The dataset does not contain an arrival-date column. Therefore, it cannot independently support historical price trend analysis or time-series forecasting.
-
-The dataset has not yet been integrated into the current Snowflake analytics pipeline.
+This dataset has not been integrated into the current Snowflake analytics pipeline. It does not contain an arrival-date column, so it cannot independently support historical price trends or time-series forecasting.
 
 ## 4. Tomato Market Price Research – AGMARKNET
 
@@ -94,19 +90,19 @@ The dataset has not yet been integrated into the current Snowflake analytics pip
 - Research period: 1 October 2026 – 16 November 2026
 
 **Observed research details:**
-- The portal displayed 74 matching records.
+- Portal displayed 74 matching records.
 - 10 records were visible in the inspected result.
 - Sample modal price values included 1000, 800, and 900.
-- Price units and complete dataset metadata still require verification.
+- Price units and complete metadata require verification.
 - Full dataset download was not completed.
 
-**Purpose in AtmoSync:**
+**Purpose:**
 
-The research explores the availability of dated tomato market-price information for future market comparison and price analysis.
+Explore dated tomato market-price information for future market comparison.
 
 **Limitation:**
 
-This is preliminary source research. The complete dataset has not been downloaded or integrated into Snowflake.
+This is preliminary research. The complete dataset has not been downloaded or integrated into Snowflake.
 
 ## 5. Industrial Fault Detection Dataset
 
@@ -131,13 +127,13 @@ This is preliminary source research. The complete dataset has not been downloade
 - Fault Label 2: 88 records
 - Missing values: None observed during inspection
 
-**Purpose in AtmoSync:**
+**Purpose:**
 
 Reference for understanding industrial sensor readings, vibration analysis, and fault-detection concepts.
 
 **Limitation:**
 
-This dataset represents industrial machinery, not refrigerated transport containers. Its fault labels are not used as verified food-spoilage labels.
+This dataset represents industrial machinery, not refrigerated transport containers. Its fault labels are not treated as verified food-spoilage labels.
 
 ## 6. Sensor Fault Detection Dataset
 
@@ -157,7 +153,7 @@ This dataset represents industrial machinery, not refrigerated transport contain
 - Date range: 1 August 2016 – 1 September 2017
 - Sensor description: PT100 temperature sensor in an industrial environment
 
-**Purpose in AtmoSync:**
+**Purpose:**
 
 Reference for timestamp-based sensor readings and sensor-event analysis.
 
@@ -165,46 +161,97 @@ Reference for timestamp-based sensor readings and sensor-event analysis.
 
 The source describes an industrial PT100 sensor. Its readings are not assumed to represent refrigerated-container conditions.
 
-## 7. Dataset Selection and Usage
+## 7. AtmoSync Mock Market Price Seed
+
+**File:** `market_prices.csv`  
+**Location:** `atmosync_dbt/seeds/market_prices.csv`  
+**Source:** Synthetic mock reference data prepared for the project prototype.
+
+**Sample market information:**
+
+| Market | Commodity | Price per kg | Distance (km) |
+|---|---|---:|---:|
+| Kolhapur Market | Tomato | 30 | 40 |
+| Pune Market | Tomato | 42 | 230 |
+| Mumbai Market | Tomato | 50 | 375 |
+| Sangli Market | Tomato | 35 | 50 |
+
+**Purpose:**
+- Demonstrate market-wise price comparisons.
+- Join market information with container analytics.
+- Prepare exploratory market recommendation outputs.
+
+**Limitation:**
+
+These values are mock demonstration data, not verified current market prices.
+
+## 8. Container Route Dataset
+
+**File:** `container_routes.csv`  
+**Location:** `atmosync_dbt/seeds/container_routes.csv`  
+**Source:** Synthetic route data created for the project prototype.
+
+**Columns:**
+- container_id
+- origin
+- destination
+- departure_timestamp
+- arrival_timestamp
+- distance_km
+
+**Purpose:**
+- Analyze historical route records.
+- Calculate travel duration.
+- Prepare route-based analytics.
+
+**Limitation:**
+
+The route records are synthetic and do not represent verified GPS tracking or actual transportation journeys.
+
+## 9. Dataset Selection and Usage
 
 | Dataset | Purpose | Current Status |
 |---|---|---|
-| Synthetic Sensor Data | Container monitoring prototype | Generated and tested |
+| Synthetic Sensor Data | Container monitoring | Generated and loaded |
 | Kaggle Market Prices | Commodity price reference | Inspected |
 | AGMARKNET Tomato Prices | Dated market-price research | Preliminary research |
 | Industrial Fault Detection | Fault-analysis reference | Inspected |
 | Sensor Fault Detection | Sensor-event reference | Inspected |
+| Mock Market Prices | Market comparison prototype | Loaded as dbt seed |
+| Container Routes | Route analysis prototype | Loaded as dbt seed |
 
-## 8. Data Quality and Verification
+## 10. Data Quality and Verification
 
-- The three downloaded reference CSV datasets were inspected.
+- Three downloaded reference CSV datasets were inspected.
 - Dataset structures and column names were recorded.
 - Missing-value checks were performed during dataset inspection.
 - Unknown units and unverified meanings are not assumed.
 - Original downloaded datasets are preserved unchanged.
-- Synthetic sensor data was generated and validated through the Python simulator.
-- Kafka Producer and Consumer were successfully tested.
-- A total of 40 sensor records were verified in Snowflake.
-- dbt staging and container analytics models were successfully executed.
-- Eleven dbt data quality tests passed successfully (PASS=11, WARN=0, ERROR=0).
-- Snowflake sensor data was imported into Power BI.
-- Dashboard charts, KPI cards, and a container slicer were implemented.
-- Market-price integration into the current Snowflake analytics pipeline is still pending.
+- Synthetic sensor data was generated using the Python simulator.
+- Kafka Producer and Consumer were tested separately.
+- Snowflake raw table contains 40 verified sensor records.
+- dbt Snowflake connection test completed successfully.
+- Two seed datasets were successfully loaded.
+- Seven dbt table models were built successfully.
+- All 33 dbt data quality tests passed (PASS=33, WARN=0, ERROR=0).
+- Automatic Kafka-to-Snowflake streaming remains unverified.
+- Apache Superset deployment and dashboard development remain pending.
 
-## 9. Pending Data Requirements
+## 11. Pending Data Requirements
 
 1. Complete and verified dated tomato market-price data.
 2. Verification of market-price units and source metadata.
-3. Integration of market-price records into Snowflake.
-4. Market-wise price comparison and analytics.
+3. Integration of verified market-price records into Snowflake.
+4. Validation of market-wise price comparison logic.
 5. Verification of dataset licensing before redistribution.
-6. Additional validated cold-chain sensor data for more realistic analysis.
+6. Additional validated cold-chain sensor data.
+7. Live Kafka-to-Snowflake ingestion verification.
 
-## 10. Research Status
+## 12. Research Status
 
 Initial reference dataset inspection has been completed.
 
-Synthetic sensor data generation, Kafka Producer and Consumer testing, Snowflake sensor-data loading, dbt transformations, and Power BI dashboard development have been implemented and tested.
+Synthetic sensor data generation, Kafka Producer and Consumer testing, Snowflake sensor-data loading, dbt transformations, seed loading, and dbt data quality testing have been implemented and tested.
 
 Tomato market-price research using AGMARKNET has been initiated, but complete data acquisition and integration remain pending.
 
